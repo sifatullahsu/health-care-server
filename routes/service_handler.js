@@ -27,7 +27,6 @@ router.post('/create', async (req, res) => {
 
 
 router.patch('/edit/:id', async (req, res) => {
-
   const query = { _id: req.params.id }
   const result = await Service.updateOne(query, { $set: req.body });
 
@@ -54,7 +53,8 @@ router.get('/list', async (req, res) => {
 
   try {
     const query = {}
-    const results = await Service.find(query).skip(skip).limit(size).sort({ _id: -1 });
+    const populate = { path: 'doctors' }
+    const results = await Service.find(query).populate(populate).skip(skip).limit(size).sort({ _id: -1 });
 
     res.send(response(true, results));
   }
@@ -70,7 +70,7 @@ router.get('/single/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const query = { _id: id }
-    const results = await Service.findOne(query);
+    const results = await Service.findOne(query).populate({ path: 'doctors' });
 
     res.send(results ? response(true, results) : response(false, 'Data not found!'));
   }

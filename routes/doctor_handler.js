@@ -81,7 +81,22 @@ router.get('/single/:id', async (req, res) => {
 });
 
 
-// /doctors/name/:name
+router.get('/search', async (req, res) => {
+  try {
+    const { name } = req.query;
+    const query = { name: new RegExp(name, 'i') }
+    const results = await Doctor.find(query).select({ name: 1, email: 1 });
+
+    const dataProcess = results?.map(i => {
+      return ({ value: i._id, label: `${i.name} (${i.email})` });
+    });
+
+    res.send(results ? response(true, dataProcess) : response(false, 'Data not found!'));
+  }
+  catch (error) {
+    res.send(response(false, 'There have server side error!'));
+  }
+});
 
 
 module.exports = router;
