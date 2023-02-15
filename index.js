@@ -3,7 +3,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const serviceHandler = require('./routes/service_handler');
 const doctorHandler = require('./routes/doctor_handler');
-const bookingHandler = require('./routes/booking_handler');
+const appointmentHandler = require('./routes/appointment_handler');
 
 
 const app = express();
@@ -24,7 +24,7 @@ connection();
 
 app.use('/api/v1/services', serviceHandler);
 app.use('/api/v1/doctors', doctorHandler);
-app.use('/api/v1/bookings', bookingHandler);
+app.use('/api/v1/appointment', appointmentHandler);
 
 
 app.get('/', (req, res) => res.send({ message: 'server is running!' }));

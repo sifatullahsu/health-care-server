@@ -1,13 +1,13 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const bookingSchema = require('../schemas/booking_schema');
+const appointmentSchema = require('../schemas/appointment_schema');
 
 const router = express.Router();
-const Booking = new mongoose.model('Booking', bookingSchema);
+const Appointment = new mongoose.model('Appointment', appointmentSchema);
 
 
 router.post('/create', async (req, res) => {
-  const newDocument = new Booking(req.body);
+  const newDocument = new Appointment(req.body);
   await newDocument.save((err) => {
     if (err) {
       res.json({
