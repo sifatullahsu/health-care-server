@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const serviceHandler = require('./routes/service_handler');
 const doctorHandler = require('./routes/doctor_handler');
 const appointmentHandler = require('./routes/appointment_handler');
+const userHandler = require('./routes/user_handler');
 
 
 const app = express();
@@ -25,7 +26,8 @@ connection();
 
 app.use('/api/v1/services', serviceHandler);
 app.use('/api/v1/doctors', doctorHandler);
-app.use('/api/v1/appointment', appointmentHandler);
+app.use('/api/v1/appointments', appointmentHandler);
+app.use('/api/v1/users', userHandler);
 
 app.get('/', (req, res) => res.send({ message: 'server is running!' }));
 app.listen(process.env.PORT, () => console.log(`server running on ${process.env.PORT}`));
