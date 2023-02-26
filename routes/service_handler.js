@@ -2,10 +2,12 @@ const express = require('express');
 const mongoose = require('mongoose');
 const { response } = require('../helpers/halpers');
 const serviceSchema = require('../schemas/service_schema');
+const appointmentSchema = require('../schemas/appointment_schema');
+const { format } = require('date-fns');
 
 const router = express.Router();
 const Service = new mongoose.model('Service', serviceSchema);
-
+const Appointment = new mongoose.model('Appointment', appointmentSchema);
 
 router.post('/create', async (req, res) => {
   const newDocument = new Service(req.body);
@@ -69,8 +71,19 @@ router.get('/single/:id', async (req, res) => {
 
   try {
     const { id } = req.params;
+    const date = req.query.date || format(new Date(), 'PP');
+
     const query = { _id: id }
     const results = await Service.findOne(query).populate({ path: 'doctors' });
+
+    for (const [index, doctor] of results.doctors.entries()) {
+      const query = { "doctor._id": doctor._id }
+      const appointments = await Appointment.find(query).select({ date: 1, slot: 1, _id: 0 });
+
+      const slots = results.doctors[index].slots.filter((slot) => !appointments.some(({ slot: slot2 }) => slot === slot2));
+
+      results.doctors[index].slots = slots;
+    }
 
     res.send(results ? response(true, results) : response(false, 'Data not found!'));
   }
