@@ -49,7 +49,19 @@ router.get('/list', async (req, res) => {
     const query = {}
     const results = await User.find(query).skip(skip).limit(size).sort({ _id: -1 });
 
-    res.send(response(true, results));
+    const count = await User.countDocuments(query);
+    const total = Math.ceil(count / size);
+
+    const pagination = {
+      totalPage: total,
+      currentPage: page,
+      documentsSize: size,
+      totalDocuments: count,
+      start: skip + 1,
+      end: skip + results.length
+    }
+
+    res.send(response(true, results, pagination));
   }
   catch (error) {
     res.send(response(false, 'There have server side error!'));

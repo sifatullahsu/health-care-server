@@ -58,7 +58,19 @@ router.get('/list', async (req, res) => {
     const populate = { path: 'doctors' }
     const results = await Service.find(query).populate(populate).skip(skip).limit(size).sort({ _id: -1 });
 
-    res.send(response(true, results));
+    const count = await Service.countDocuments(query);
+    const total = Math.ceil(count / size);
+
+    const pagination = {
+      totalPage: total,
+      currentPage: page,
+      documentsSize: size,
+      totalDocuments: count,
+      start: skip + 1,
+      end: skip + results.length
+    }
+
+    res.send(response(true, results, pagination));
   }
   catch (error) {
     res.send(response(false, 'There have server side error!'));
@@ -77,7 +89,7 @@ router.get('/single/:id', async (req, res) => {
     const results = await Service.findOne(query).populate({ path: 'doctors' });
 
     for (const [index, doctor] of results.doctors.entries()) {
-      const query = { "doctor._id": doctor._id }
+      const query = { $and: [{ "doctor._id": doctor._id }, { date: date }] }
       const appointments = await Appointment.find(query).select({ date: 1, slot: 1, _id: 0 });
 
       const slots = results.doctors[index].slots.filter((slot) => !appointments.some(({ slot: slot2 }) => slot === slot2));
