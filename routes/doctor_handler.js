@@ -2,9 +2,11 @@ const express = require('express');
 const mongoose = require('mongoose');
 const { response } = require('../helpers/halpers');
 const doctorSchema = require('../schemas/doctor_schema');
+const serviceSchema = require('../schemas/service_schema');
 
 const router = express.Router();
 const Doctor = new mongoose.model('Doctor', doctorSchema);
+const Service = new mongoose.model('Service', serviceSchema);
 
 
 router.post('/create', async (req, res) => {
@@ -99,9 +101,11 @@ router.get('/search', async (req, res) => {
     const query = { name: new RegExp(name, 'i') }
     const results = await Doctor.find(query).select({ name: 1, email: 1 });
 
-    const dataProcess = results?.map(i => {
-      return ({ value: i._id, label: `${i.name} (${i.email})` });
-    });
+    const dataProcess = await Promise.all(results?.map(async (i) => {
+      const results = await Service.findOne({ doctors: { $elemMatch: { $eq: i._id } } }).select({ _id: 1 });
+
+      return ({ value: i._id, label: `${i.name} (${i.email})`, isDisabled: results ? true : false });
+    }));
 
     res.send(results ? response(true, dataProcess) : response(false, 'Data not found!'));
   }
