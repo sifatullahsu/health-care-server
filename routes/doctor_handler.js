@@ -98,7 +98,9 @@ router.get('/single/:id', async (req, res) => {
 router.get('/search', async (req, res) => {
   try {
     const { name } = req.query;
-    const query = { name: new RegExp(name, 'i') }
+    let query = { name: new RegExp(name, 'i') }
+    if (name === 'all') query = {}
+
     const results = await Doctor.find(query).select({ name: 1, email: 1 });
 
     const dataProcess = await Promise.all(results?.map(async (i) => {

@@ -93,7 +93,7 @@ router.get('/list/:id', async (req, res) => {
 
   try {
     const query = { "metaInfo.author": id }
-    const results = await Appointment.find(query).skip(skip).limit(size).sort({ _id: -1 });
+    const results = await Appointment.find(query).populate({ path: 'doctor._id' }).skip(skip).limit(size).sort({ _id: -1 });
 
     const count = await Appointment.countDocuments(query);
     const total = Math.ceil(count / size);
@@ -108,6 +108,22 @@ router.get('/list/:id', async (req, res) => {
     }
 
     res.send(response(true, results, pagination));
+  }
+  catch (error) {
+    res.send(response(false, 'There have server side error!'));
+  }
+
+});
+
+
+router.get('/single/:id', async (req, res) => {
+
+  try {
+    const { id } = req.params;
+    const query = { _id: id }
+    const results = await Appointment.findOne(query).select({ __v: 0 });
+
+    res.send(results ? response(true, results) : response(false, 'Data not found!'));
   }
   catch (error) {
     res.send(response(false, 'There have server side error!'));
