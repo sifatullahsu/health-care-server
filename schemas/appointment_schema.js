@@ -10,7 +10,9 @@ const appointmentSchema = mongoose.Schema({
   },
   doctor: {
     _id: { type: mongoose.Types.ObjectId, ref: 'Doctor', required: true },
-    name: { type: String, trim: true, required: true }
+    name: { type: String, trim: true, required: true },
+    qualifications: { type: String, trim: true, required: true },
+    designation: { type: String, trim: true, required: true },
   },
   patient: {
     name: { type: String, trim: true, required: true },

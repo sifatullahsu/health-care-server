@@ -93,7 +93,7 @@ router.get('/list/:id', async (req, res) => {
 
   try {
     const query = { "metaInfo.author": id }
-    const results = await Appointment.find(query).populate({ path: 'doctor._id' }).skip(skip).limit(size).sort({ _id: -1 });
+    const results = await Appointment.find(query).skip(skip).limit(size).sort({ _id: -1 });
 
     const count = await Appointment.countDocuments(query);
     const total = Math.ceil(count / size);
@@ -108,6 +108,37 @@ router.get('/list/:id', async (req, res) => {
     }
 
     res.send(response(true, results, pagination));
+  }
+  catch (error) {
+    res.send(response(false, 'There have server side error!'));
+  }
+
+});
+
+
+router.get('/dash-data/:id', async (req, res) => {
+
+  const { id } = req.params;
+
+  try {
+    const query = { "metaInfo.author": id }
+    const select = { "payment.amount": 1, _id: 0 }
+    const results = await Appointment.find(query).select(select).sort({ _id: -1 });
+
+    const data = {
+      totalSpend: 0,
+      appointments: {
+        total: results.length,
+        upcoming: 2,
+        completed: 3
+      }
+    }
+
+    for (const i of results) {
+      data.totalSpend = data.totalSpend + parseFloat(i.payment.amount);
+    }
+
+    res.send(response(true, data));
   }
   catch (error) {
     res.send(response(false, 'There have server side error!'));
