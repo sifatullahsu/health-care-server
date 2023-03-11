@@ -116,6 +116,39 @@ router.get('/list/:id', async (req, res) => {
 });
 
 
+router.get('/list/doctor/:id', async (req, res) => {
+
+  const { id } = req.params;
+
+  const page = parseInt(req.query.page) || 1;
+  const size = parseInt(req.query.size) || 10;
+  const skip = (page - 1) * size;
+
+  try {
+    const query = { "doctor._id": id }
+    const results = await Appointment.find(query).skip(skip).limit(size).sort({ _id: -1 });
+
+    const count = await Appointment.countDocuments(query);
+    const total = Math.ceil(count / size);
+
+    const pagination = {
+      totalPage: total,
+      currentPage: page,
+      documentsSize: size,
+      totalDocuments: count,
+      start: skip + 1,
+      end: skip + results.length
+    }
+
+    res.send(response(true, results, pagination));
+  }
+  catch (error) {
+    res.send(response(false, 'There have server side error!'));
+  }
+
+});
+
+
 router.get('/dash-data/:id', async (req, res) => {
 
   const { id } = req.params;
