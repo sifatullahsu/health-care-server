@@ -84,7 +84,7 @@ router.get('/single/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const query = { _id: id }
-    const results = await Doctor.findOne(query).populate({ path: 'user', select: { name: 1, email: 1 } });
+    const results = await Doctor.findOne(query).populate({ path: 'user', select: { name: 1, email: 1, role: 1 } });
 
     res.send(results ? response(true, results) : response(false, 'Data not found!'));
   }

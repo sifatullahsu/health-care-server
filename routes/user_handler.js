@@ -32,9 +32,18 @@ router.get('/single/:uid', async (req, res) => {
   try {
     const { uid } = req.params;
     const query = { uid: uid }
-    const results = await User.findOne(query);
+    const results = await User.findOne(query).select({ __v: 0 });
 
-    res.send(results ? response(true, results) : response(false, 'Data not found!'));
+    let doctorData = undefined;
+
+    if (results?.role === 'doctor') {
+      const doctor = await Doctor.findOne({ user: results?._id }).select({ user: 0, __v: 0 });
+      doctorData = doctor;
+    }
+
+    const data = doctorData === undefined ? results : { ...results.toObject(), doctor: doctorData };
+
+    res.send(results ? response(true, data) : response(false, 'Data not found!'));
   }
   catch (error) {
     res.send(response(false, 'There have server side error!'));
