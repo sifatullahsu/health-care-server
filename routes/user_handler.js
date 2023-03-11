@@ -1,10 +1,13 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const { response } = require('../helpers/halpers');
+const doctorSchema = require('../schemas/doctor_schema');
 const userSchema = require('../schemas/user_schema');
 
 const router = express.Router();
+const Doctor = new mongoose.model('Doctor', doctorSchema);
 const User = new mongoose.model('User', userSchema);
+
 
 router.post('/create', async (req, res) => {
   const newDocument = new User(req.body);
@@ -67,6 +70,47 @@ router.get('/list', async (req, res) => {
     res.send(response(false, 'There have server side error!'));
   }
 
+});
+
+router.patch('/edit/:id', async (req, res) => {
+
+  const query = { _id: req.params.id }
+  const result = await User.updateOne(query, { $set: req.body });
+
+  if (result?.acknowledged) {
+    res.json({
+      status: true,
+      message: 'Items updated successful!'
+    });
+  }
+  else {
+    res.json({
+      status: false,
+      message: 'There was a server side error!'
+    });
+  }
+});
+
+router.get('/associat-doctor', async (req, res) => {
+  try {
+    const { name } = req.query;
+    let query = { $and: [{ name: new RegExp(name, 'i') }, { role: 'doctor' }] }
+    if (name === 'all') query = { role: 'doctor' }
+
+    const results = await User.find(query).select({ name: 1, email: 1, role: 1 });
+
+    const dataProcess = await Promise.all(results?.map(async (i) => {
+      // const results = await Doctor.findOne({ user: { $elemMatch: { $eq: i._id } } }).select({ _id: 1 });
+      const results = false;
+
+      return ({ value: i._id, label: `${i.name} (${i.email}) - ${i.role}`, isDisabled: results ? true : false });
+    }));
+
+    res.send(results ? response(true, dataProcess) : response(false, 'Data not found!'));
+  }
+  catch (error) {
+    res.send(response(false, 'There have server side error!'));
+  }
 });
 
 

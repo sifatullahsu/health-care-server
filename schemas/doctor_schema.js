@@ -10,6 +10,7 @@ const doctorSchema = mongoose.Schema({
     { type: String, trim: true, required: true }
   ],
   about: { type: String, trim: true, required: true },
+  user: { type: mongoose.Types.ObjectId, ref: 'User', unique: true },
 });
 
 module.exports = doctorSchema;
