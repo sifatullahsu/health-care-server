@@ -152,23 +152,33 @@ router.get('/list/doctor/:id', async (req, res) => {
 router.get('/dash-data/:id', async (req, res) => {
 
   const { id } = req.params;
+  const date = new Date().getTime();
 
   try {
     const query = { "metaInfo.author": id }
-    const select = { "payment.amount": 1, _id: 0 }
+    const select = { "payment.amount": 1, date: 1, slot: 1, _id: 0 }
     const results = await Appointment.find(query).select(select).sort({ _id: -1 });
 
     const data = {
       totalSpend: 0,
       appointments: {
         total: results.length,
-        upcoming: 2,
-        completed: 3
+        upcoming: 0,
+        completed: 0
       }
     }
 
     for (const i of results) {
       data.totalSpend = data.totalSpend + parseFloat(i.payment.amount);
+
+      const appointmentDate = new Date(`${i.date} ${i.slot.split(' - ')[1]}`).getTime();
+
+      if (appointmentDate - date > 0) {
+        data.appointments.upcoming += 1;
+      }
+      else {
+        data.appointments.completed += 1;
+      }
     }
 
     res.send(response(true, data));
