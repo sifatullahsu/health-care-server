@@ -105,5 +105,23 @@ router.get('/single/:id', async (req, res) => {
 
 });
 
+router.delete('/delete/:id', async (req, res) => {
+  const query = { _id: req.params.id }
+  const result = await Service.deleteOne(query);
+
+  if (result?.acknowledged) {
+    res.json({
+      status: true,
+      message: 'Items delete successful!'
+    });
+  }
+  else {
+    res.json({
+      status: false,
+      message: 'There was a server side error!'
+    });
+  }
+});
+
 
 module.exports = router;
