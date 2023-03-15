@@ -27,7 +27,7 @@ router.post('/create', async (req, res) => {
   });
 });
 
-router.get('/single/:uid', async (req, res) => {
+router.get('/single/uid/:uid', async (req, res) => {
 
   try {
     const { uid } = req.params;
@@ -44,6 +44,21 @@ router.get('/single/:uid', async (req, res) => {
     const data = doctorData === undefined ? results : { ...results.toObject(), doctor: doctorData };
 
     res.send(results ? response(true, data) : response(false, 'Data not found!'));
+  }
+  catch (error) {
+    res.send(response(false, 'There have server side error!'));
+  }
+
+});
+
+router.get('/single/:id', async (req, res) => {
+
+  try {
+    const { id } = req.params;
+    const query = { _id: id }
+    const results = await User.findOne(query).select({ __v: 0 });
+
+    res.send(results ? response(true, results) : response(false, 'Data not found!'));
   }
   catch (error) {
     res.send(response(false, 'There have server side error!'));
