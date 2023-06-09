@@ -1,7 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const { response } = require('../helpers/halpers');
-const appointmentSchema = require('../schemas/appointment_schema');
+const { response } = require('../../helpers/halpers');
+const appointmentSchema = require('../../schemas/appointment_schema');
 const stripe = require('stripe')(process.env.STRIPE_SK);
 
 const router = express.Router();

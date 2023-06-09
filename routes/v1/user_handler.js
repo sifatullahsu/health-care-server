@@ -1,8 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const { response } = require('../helpers/halpers');
-const doctorSchema = require('../schemas/doctor_schema');
-const userSchema = require('../schemas/user_schema');
+const { response } = require('../../helpers/halpers');
+const doctorSchema = require('../../schemas/doctor_schema');
+const userSchema = require('../../schemas/user_schema');
 
 const router = express.Router();
 const Doctor = new mongoose.model('Doctor', doctorSchema);
@@ -26,6 +26,7 @@ router.post('/create', async (req, res) => {
     }
   });
 });
+
 
 router.get('/single/uid/:uid', async (req, res) => {
 
@@ -51,6 +52,7 @@ router.get('/single/uid/:uid', async (req, res) => {
 
 });
 
+
 router.get('/single/:id', async (req, res) => {
 
   try {
@@ -65,6 +67,7 @@ router.get('/single/:id', async (req, res) => {
   }
 
 });
+
 
 router.get('/list', async (req, res) => {
 
@@ -96,6 +99,7 @@ router.get('/list', async (req, res) => {
 
 });
 
+
 router.patch('/edit/:id', async (req, res) => {
 
   const query = { _id: req.params.id }
@@ -114,6 +118,7 @@ router.patch('/edit/:id', async (req, res) => {
     });
   }
 });
+
 
 router.get('/associat-doctor', async (req, res) => {
   try {

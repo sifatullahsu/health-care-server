@@ -1,16 +1,16 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const { response } = require('../helpers/halpers');
-const doctorSchema = require('../schemas/doctor_schema');
-const serviceSchema = require('../schemas/service_schema');
+const { response } = require('../../helpers/halpers');
+const serviceSchema = require('../../schemas/service_schema');
+const appointmentSchema = require('../../schemas/appointment_schema');
+const { format } = require('date-fns');
 
 const router = express.Router();
-const Doctor = new mongoose.model('Doctor', doctorSchema);
 const Service = new mongoose.model('Service', serviceSchema);
-
+const Appointment = new mongoose.model('Appointment', appointmentSchema);
 
 router.post('/create', async (req, res) => {
-  const newDocument = new Doctor(req.body);
+  const newDocument = new Service(req.body);
   await newDocument.save((err) => {
     if (err) {
       res.json({
@@ -29,9 +29,8 @@ router.post('/create', async (req, res) => {
 
 
 router.patch('/edit/:id', async (req, res) => {
-
   const query = { _id: req.params.id }
-  const result = await Doctor.updateOne(query, { $set: req.body });
+  const result = await Service.updateOne(query, { $set: req.body });
 
   if (result?.acknowledged) {
     res.json({
@@ -56,9 +55,10 @@ router.get('/list', async (req, res) => {
 
   try {
     const query = {}
-    const results = await Doctor.find(query).skip(skip).limit(size).sort({ _id: -1 });
+    const populate = { path: 'doctors' }
+    const results = await Service.find(query).populate(populate).skip(skip).limit(size).sort({ _id: -1 });
 
-    const count = await Doctor.countDocuments(query);
+    const count = await Service.countDocuments(query);
     const total = Math.ceil(count / size);
 
     const pagination = {
@@ -83,8 +83,19 @@ router.get('/single/:id', async (req, res) => {
 
   try {
     const { id } = req.params;
+    const date = req.query.date || format(new Date(), 'PP');
+
     const query = { _id: id }
-    const results = await Doctor.findOne(query).populate({ path: 'user', select: { name: 1, email: 1, role: 1 } });
+    const results = await Service.findOne(query).populate({ path: 'doctors' });
+
+    for (const [index, doctor] of results.doctors.entries()) {
+      const query = { $and: [{ "doctor._id": doctor._id }, { date: date }] }
+      const appointments = await Appointment.find(query).select({ date: 1, slot: 1, _id: 0 });
+
+      const slots = results.doctors[index].slots.filter((slot) => !appointments.some(({ slot: slot2 }) => slot === slot2));
+
+      results.doctors[index].slots = slots;
+    }
 
     res.send(results ? response(true, results) : response(false, 'Data not found!'));
   }
@@ -95,30 +106,9 @@ router.get('/single/:id', async (req, res) => {
 });
 
 
-router.get('/search', async (req, res) => {
-  try {
-    const { name } = req.query;
-    let query = { name: new RegExp(name, 'i') }
-    if (name === 'all') query = {}
-
-    const results = await Doctor.find(query).select({ name: 1, email: 1 });
-
-    const dataProcess = await Promise.all(results?.map(async (i) => {
-      const results = await Service.findOne({ doctors: { $elemMatch: { $eq: i._id } } }).select({ _id: 1 });
-
-      return ({ value: i._id, label: `${i.name} (${i.email})`, isDisabled: results ? true : false });
-    }));
-
-    res.send(results ? response(true, dataProcess) : response(false, 'Data not found!'));
-  }
-  catch (error) {
-    res.send(response(false, 'There have server side error!'));
-  }
-});
-
 router.delete('/delete/:id', async (req, res) => {
   const query = { _id: req.params.id }
-  const result = await Doctor.deleteOne(query);
+  const result = await Service.deleteOne(query);
 
   if (result?.acknowledged) {
     res.json({
