@@ -1,6 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const { response } = require('../../helpers/halpers');
+const { response, createZoomMeeting } = require('../../helpers/halpers');
 const appointmentSchema = require('../../schemas/appointment_schema');
 const stripe = require('stripe')(process.env.STRIPE_SK);
 
@@ -33,7 +33,22 @@ router.post('/create-payment-intent', async (req, res) => {
 
 router.post('/create', async (req, res) => {
 
-  const newDocument = new Appointment(req.body);
+  const meetingInfo = {
+    topic: 'health care',
+    type: 2,
+    duration: 30,
+    start_time: new Date().toISOString(),
+  }
+
+  const meeting = await createZoomMeeting(meetingInfo);
+  const meetingData = {
+    id: meeting?.id,
+    password: meeting?.password,
+    startTime: meeting?.start_time,
+    joinUrl: meeting?.join_url
+  }
+
+  const newDocument = new Appointment({ ...req.body, meeting: { ...meetingData } });
   await newDocument.save((err) => {
     if (err) {
       res.json({

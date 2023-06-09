@@ -25,6 +25,20 @@ const appointmentSchema = mongoose.Schema({
     amount: { type: String, trim: true, required: true },
     currency: { type: String, trim: true, required: true }
   },
+  meeting: {
+    id: {
+      type: String
+    },
+    password: {
+      type: String
+    },
+    startTime: {
+      type: String
+    },
+    joinUrl: {
+      type: String
+    }
+  },
   metaInfo: {
     author: { type: mongoose.Types.ObjectId, ref: 'User', required: true },
     created: { type: Date, required: true, default: Date.now },
